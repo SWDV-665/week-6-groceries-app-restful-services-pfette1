@@ -11,7 +11,7 @@ export class InputDialogService {
     private alertController: AlertController,
     public dataService: GroceriesService  ) { }
 
-  async showPrompt(toast: HTMLIonToastElement, item?: any, index?: number) {
+  async showPrompt(toast: HTMLIonToastElement, item?: any, index?: number, id?: any) {
     const alert = await this.alertController.create({
       header: item? 'Edit Item' : 'Add Item',
       subHeader: item? 'Please edit item...' : 'Please enter an item...',
@@ -25,7 +25,7 @@ export class InputDialogService {
           text: 'Save',
           handler: (item: any) => {
             if (index !== undefined) {
-              this.dataService.editItem(item, index);
+              this.dataService.editItem(item, index, id);
             } else {
               this.dataService.addItem(item)
             }

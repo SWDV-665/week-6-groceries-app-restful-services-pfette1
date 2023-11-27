@@ -1,27 +1,58 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, map, Observable, Subject, ObservableInput } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GroceriesService {
 
-  items: any[] = []
+  items: Object = [];
 
-  constructor() { }
+  dataChanged$: Observable<boolean>;
 
-  getItems() {
-    return this.items;
+  private dataChangeSubject: Subject<boolean>;
+
+  baseUrl = "http://localhost:8080";
+
+  constructor(public http: HttpClient) {
+    console.log('Hello GroceriesService Provider');
+
+    this.dataChangeSubject = new Subject<boolean>();
+    this.dataChanged$ = this.dataChangeSubject.asObservable();
   }
 
-  removeItem(index: number) {
-    this.items.splice(index, 1);
+  getItems(): Observable<object[]> {
+    return this.http.get(this.baseUrl + '/api/groceries').pipe(
+      map(this.extractData),
+      catchError(err => { throw err })
+    );
+  }
+
+  private extractData(res: Response | any) {
+    let body = res;
+    return body || {};
+  }
+
+  removeItem(id: any) {
+    this.http.delete(this.baseUrl + '/api/groceries/' + id).subscribe(res => {
+      this.items = res;
+      this.dataChangeSubject.next(true);
+    });
   }
 
   addItem(item: any) {
-    this.items.push(item);
+    this.http.post(this.baseUrl + '/api/groceries', item).subscribe(res => {
+      this.items = res;
+      this.dataChangeSubject.next(true);
+    });
   }
 
-  editItem(item: any, index: number) {
-    this.items[index] = item;
+  editItem(item: any, index: number, id: any) {
+    console.log(item);
+    this.http.put(this.baseUrl + '/api/groceries/' + id, item).subscribe(res => {
+      this.items = res;
+      this.dataChangeSubject.next(true);
+    });
   }
 }

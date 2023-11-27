@@ -12,6 +12,8 @@ import { SocialSharing } from '@ionic-native/social-sharing/ngx'
 export class Tab1Page {
 
   title = "Grocery";
+  items: any = [];
+  errorMessage: string;
 
   public addItemAlertButtons = [
     {
@@ -44,13 +46,24 @@ export class Tab1Page {
     private toastController: ToastController,
     public dataService: GroceriesService,
     public inputDialogService: InputDialogService,
-    public socialSharingService: SocialSharing) { }
-
-  loadItems() {
-    return this.dataService.getItems();
+    public socialSharingService: SocialSharing) {
+    dataService.dataChanged$.subscribe((dataChanged: boolean) => {
+      this.loadItems();
+    });
   }
 
-  async removeItem(item: any, index: number) {
+  ionViewWillEnter() {
+    this.loadItems();
+  }
+
+  loadItems() {
+    this.dataService.getItems().subscribe(
+      items => this.items = items,
+      error => this.errorMessage = <any>error
+    );
+  }
+
+  async removeItem(item: any, id: any) {
     const toast = await this.toastController.create({
       message: item.name + ' successfully removed',
       duration: 1500,
@@ -60,7 +73,7 @@ export class Tab1Page {
 
     await toast.present();
 
-    this.dataService.removeItem(index);
+    this.dataService.removeItem(id);
   }
 
   async shareItem(item: any, index: number) {
@@ -94,7 +107,7 @@ export class Tab1Page {
     this.inputDialogService.showPrompt(toast);
   }
 
-  async editItem(item: any, index: number) {
+  async editItem(item: any, index: number, id: any) {
     const toast = await this.toastController.create({
       message: 'Editing item - ' + index + '...',
       duration: 1500,
@@ -102,7 +115,7 @@ export class Tab1Page {
       color: 'success',
     });
 
-    this.inputDialogService.showPrompt(toast, item, index);
+    this.inputDialogService.showPrompt(toast, item, index, id);
   }
 
   dismiss() {
